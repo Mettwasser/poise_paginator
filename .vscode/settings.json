@@ -1,8 +1,5 @@
 {
     "cSpell.words": [
-        "chrono",
-        "dotenv",
-        "moka",
-        "thiserror"
+        "dotenv"
     ]
 }
