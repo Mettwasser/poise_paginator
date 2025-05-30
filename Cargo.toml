@@ -1,0 +1,12 @@
+[package]
+name = "poise_paginator"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+poise = "0.6.1"
+tokio = { version = "1.45.0", features = ["full"] }
+
+
+[workspace]
+members = ["examples/*"]
