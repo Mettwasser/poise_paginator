@@ -6,7 +6,7 @@ use {
     std::{sync::Arc, time::Duration},
 };
 
-use poise_paginator::{cancellation_type::CancellationType, paginator::paginate};
+use poise_paginator::{CancellationType, paginate};
 
 // Utilities/types for the example
 use poise_paginator_example::{ApplyIf, Context, Error};
