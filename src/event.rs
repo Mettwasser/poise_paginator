@@ -10,5 +10,4 @@ pub(crate) enum Event<E> {
     CancelledByTimeout,
     CancelledByUser(ComponentInteraction),
     Error(ComponentInteraction, E),
-    Pass,
 }

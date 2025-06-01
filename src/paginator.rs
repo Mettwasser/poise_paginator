@@ -223,7 +223,6 @@ where
                 send_error_embed(ctx, interaction, e).await?;
                 continue;
             }
-            Event::Pass => continue,
         };
 
         let embed = generator(
@@ -334,7 +333,7 @@ async fn handle_button_press(
 
                         event
                     }
-                    Ok(None) => Event::Pass,
+                    Ok(None) => return,
                     Err(e) => Event::Error(press, e.into()),
                 };
 
