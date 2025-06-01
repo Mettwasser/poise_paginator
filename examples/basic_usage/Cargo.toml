@@ -5,9 +5,8 @@ edition = "2024"
 publish = false
 
 [dependencies]
-chrono = "0.4.41"
 dotenv = "0.15.0"
-poise = "0.6.1"
+poise = { workspace = true }
 tokio = { version = "1.45.0", features = ["full"] }
 tracing = "0.1.41"
 tracing-subscriber = "0.3.19"

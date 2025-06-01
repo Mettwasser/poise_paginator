@@ -4,9 +4,11 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
-poise = "0.6.1"
-tokio = { version = "1.45.0", features = ["full"] }
+tokio = "1.45.0"
+poise = { workspace = true }
 
+[workspace.dependencies]
+poise = "0.6.1"
 
 [workspace]
 members = ["examples/*"]
