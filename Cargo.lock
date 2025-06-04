@@ -1073,7 +1073,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "poise_paginator-example-custom"
+name = "poise_paginator_example_custom"
 version = "0.1.0"
 dependencies = [
  "dotenv",

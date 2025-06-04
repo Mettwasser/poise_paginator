@@ -6,6 +6,8 @@ use poise::{
 pub type Error = Box<dyn std::error::Error + Send + Sync>;
 pub type Context<'a> = poise::ApplicationContext<'a, Data, Error>;
 
+pub mod view;
+
 #[derive(Debug, Clone, Default)]
 pub struct Data;
 

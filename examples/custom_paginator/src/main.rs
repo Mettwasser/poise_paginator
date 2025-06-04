@@ -3,7 +3,8 @@ use {
         command,
         serenity_prelude::{CreateEmbed, CreateEmbedFooter},
     },
-    poise_paginator::custom_paginator::DefaultView,
+    poise_paginator::{PaginationInfo, custom_paginate},
+    poise_paginator_example_custom::Data,
     std::{sync::Arc, time::Duration},
 };
 
@@ -11,6 +12,13 @@ use poise_paginator::CancellationType;
 
 // Utilities/types for the example
 use poise_paginator_example_custom::{ApplyIf, Context, Error};
+
+struct PaginationInformation;
+impl PaginationInfo for PaginationInformation {
+    type View = poise_paginator_example_custom::view::SimpleView;
+    type PoiseData = Data;
+    type PoiseError = Error;
+}
 
 async fn page_generator(
     _ctx: Context<'_>,
@@ -35,7 +43,7 @@ async fn page_generator(
 
 #[command(slash_command)]
 pub async fn test_paginate(ctx: Context<'_>) -> Result<(), Error> {
-    let pages: Arc<[&str]> = [
+    let pages: Arc<[&'static str]> = [
         "Page 1: Welcome to the paginator example!",
         "Page 2: This is the second page.",
         "Page 3: Here is the third page.",
@@ -44,9 +52,7 @@ pub async fn test_paginate(ctx: Context<'_>) -> Result<(), Error> {
     ]
     .into();
 
-    tracing::info!("Abc");
-
-    poise_paginator::custom_paginator::paginate::<'_, DefaultView, _, _, _, _, _>(
+    custom_paginate::<'_, PaginationInformation, _, _>(
         ctx,
         page_generator,
         pages.len(),

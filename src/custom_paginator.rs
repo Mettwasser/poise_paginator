@@ -12,7 +12,14 @@ use {
     tokio::sync::mpsc::UnboundedSender,
 };
 
-pub use crate::view::{View, default_view::DefaultView};
+pub use crate::view::View;
+
+pub trait PaginationInfo {
+    type PoiseData: Send + Sync + 'static;
+    type PoiseError: Sized + Send + Sync + 'static + Display;
+
+    type View: View<Self::PoiseData, Self::PoiseError> + Send + Sync + 'static;
+}
 
 /// A paginator function that allows users to navigate through a series of pages with a very fancy UI.
 ///
@@ -32,28 +39,30 @@ pub use crate::view::{View, default_view::DefaultView};
 /// * `length` - The total number of pages.
 /// * `timeout` - The duration after which the pagination will be cancelled if no interaction occurs.
 /// * `state` - A state that can be used to store additional information across pages, accessed through the generator.
-pub async fn paginate<'a, V, Gen, Fut, S, D, E>(
-    ctx: poise::ApplicationContext<'a, D, E>,
-    generator: Gen,
+pub async fn paginate<'a, P, Fut, S>(
+    ctx: poise::ApplicationContext<'a, P::PoiseData, P::PoiseError>,
+    generator: impl Fn(
+        poise::ApplicationContext<'a, P::PoiseData, P::PoiseError>,
+        usize,
+        CancellationType,
+        S,
+    ) -> Fut,
     length: usize,
     timeout: Duration,
     state: S,
 ) -> Result<(), Error>
 where
+    P: PaginationInfo,
     S: Clone + Send + Sync + 'static,
     Fut: Future<Output = Result<CreateEmbed, Error>> + Send,
-    Gen: Fn(poise::ApplicationContext<'a, D, E>, usize, CancellationType, S) -> Fut,
-    D: Send + Sync + 'static,
-    E: Send + Sync + 'static + Display,
-    V: View<D, E>,
 {
     let id = ctx.id();
 
     let mut current_idx: usize = 0;
 
-    let ids = V::create_ids(ctx);
+    let ids = P::View::create_ids(ctx);
 
-    let components = V::rerender_components(Arc::clone(&ids), current_idx, length, false);
+    let components = P::View::rerender_components(Arc::clone(&ids), current_idx, length, false);
 
     let first_embed = generator(
         ctx,
@@ -71,17 +80,19 @@ where
         )
         .await?;
 
-    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<Event<E>>();
+    let (tx, mut rx) = tokio::sync::mpsc::unbounded_channel::<Event<P::PoiseError>>();
 
-    tokio::spawn(handle_button_presses::<D, E, V>(
-        ctx.serenity_context().clone(),
-        tx,
-        id.to_string(),
-        ctx.author().id,
-        ctx.channel_id(),
-        timeout,
-        Arc::clone(&ids),
-    ));
+    tokio::spawn(
+        handle_button_presses::<P::PoiseData, P::PoiseError, P::View>(
+            ctx.serenity_context().clone(),
+            tx,
+            id.to_string(),
+            ctx.author().id,
+            ctx.channel_id(),
+            timeout,
+            Arc::clone(&ids),
+        ),
+    );
 
     while let Some(event) = rx.recv().await {
         // This is a flag that is solely there for the "Jump to page" button.
@@ -132,7 +143,7 @@ where
                             generator(ctx, current_idx, CancellationType::Timeout, state.clone())
                                 .await?,
                         )
-                        .components(V::rerender_components(
+                        .components(P::View::rerender_components(
                             Arc::clone(&ids),
                             current_idx,
                             length,
@@ -149,7 +160,7 @@ where
                         generator(ctx, current_idx, CancellationType::UserInput, state.clone())
                             .await?,
                     )
-                    .components(V::rerender_components(
+                    .components(P::View::rerender_components(
                         Arc::clone(&ids),
                         current_idx,
                         length,
@@ -176,7 +187,7 @@ where
             state.clone(),
         )
         .await?;
-        let components = V::rerender_components(Arc::clone(&ids), current_idx, length, false);
+        let components = P::View::rerender_components(Arc::clone(&ids), current_idx, length, false);
 
         match interaction_already_responded {
             true => {
