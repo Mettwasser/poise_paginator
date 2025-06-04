@@ -1,0 +1,13 @@
+[package]
+name = "poise_paginator-example-custom"
+version = "0.1.0"
+edition = "2024"
+publish = false
+
+[dependencies]
+dotenv = "0.15.0"
+poise = { workspace = true }
+tokio = { version = "1.45.0", features = ["full"] }
+tracing = "0.1.41"
+tracing-subscriber = "0.3.19"
+poise_paginator = { path = "../../" }

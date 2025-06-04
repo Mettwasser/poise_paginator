@@ -1,7 +1,7 @@
 use poise::serenity_prelude::ComponentInteraction;
 
-#[derive(Debug)]
-pub(crate) enum Event<E> {
+#[derive(Debug, Clone)]
+pub enum Event<E> {
     ToStart(ComponentInteraction),
     Next(ComponentInteraction),
     Previous(ComponentInteraction),
